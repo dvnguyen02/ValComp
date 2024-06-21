@@ -1,9 +1,14 @@
 import streamlit as st
 import pandas as pd
 import joblib
+import numpy as np
 
 # Load the trained model
-model = joblib.load('best_model.pkl')
+try:
+    model = joblib.load('best_model.pkl')
+except FileNotFoundError:
+    st.error("Model file not found. Please ensure 'best_model.pkl' is in the same directory as this script.")
+    st.stop()
 
 # Define the list of agents and maps
 agents = ['omen', 'skye', 'raze', 'viper', 'cypher', 'breach', 'brimstone', 'killjoy',
@@ -66,17 +71,28 @@ def main():
             # Preprocess the user input
             input_data = preprocess_input(team_a_agents, team_b_agents, selected_map)
             
-            # Make predictions using the loaded model
-            prediction = model.predict(input_data)
-            
-            # Display the prediction
-            st.header('Match Prediction')
-            if prediction[0] == 1:
-                st.success('The predicted outcome is: Team A wins!')
-            else:
-                st.success('The predicted outcome is: Team B wins!')
-            
-            # You could add more details here, like prediction confidence if your model supports it
+            try:
+                # Make predictions using the loaded model
+                prediction = model.predict(input_data)
+                probabilities = model.predict_proba(input_data)
+                
+                # Display the prediction
+                st.header('Match Prediction')
+                if prediction[0] == 1:
+                    st.success(f'The predicted outcome is: Team A wins! (With the winning rate of : {probabilities[0][1]:.2%})')
+                else:
+                    st.success(f'The predicted outcome is: Team B wins! (With the winning rate of : {probabilities[0][0]:.2%})')
+                
+                # Display feature importances if available
+                if hasattr(model, 'best_estimator_') and hasattr(model.best_estimator_, 'feature_importances_'):
+                    st.subheader('Feature Importances')
+                    feature_imp = pd.DataFrame({'feature': input_data.columns, 
+                                                'importance': model.best_estimator_.feature_importances_})
+                    feature_imp = feature_imp.sort_values('importance', ascending=False).head(10)
+                    st.bar_chart(feature_imp.set_index('feature'))
+                
+            except Exception as e:
+                st.error(f"An error occurred during prediction: {str(e)}")
 
 if __name__ == '__main__':
     main()
