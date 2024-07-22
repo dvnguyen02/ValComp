@@ -82,12 +82,4 @@ The model is trained to predict whether Team A will win (output > 0.5) or lose (
 
 Contributions to improve the model or extend the functionality are welcome. Please feel free to submit pull requests or open issues for any bugs or feature requests.
 
-## License
-
-[Specify your chosen license here, e.g., MIT License, GPL, etc.]
-
-## Acknowledgments
-
-- Data source: [Specify the source of your Valorant match data]
-- Inspired by [any inspirations or related projects]
 
